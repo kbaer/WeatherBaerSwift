@@ -13,8 +13,8 @@ import CoreLocation
 
 class DailyTableViewController: UITableViewController, CLLocationManagerDelegate {
 
-    private var locationManager: CLLocationManager = CLLocationManager()
-    private var geoCoder: CLGeocoder = CLGeocoder()
+    fileprivate var locationManager: CLLocationManager = CLLocationManager()
+    fileprivate var geoCoder: CLGeocoder = CLGeocoder()
     
     var forecast: Forecast?
     var isFindingLocation : Bool = true
@@ -31,10 +31,10 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
 
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
         isFindingLocation = true
         locationManager.requestLocation()
     }
@@ -44,18 +44,18 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
         // Dispose of any resources that can be recreated.
     }
 
-    override func  preferredStatusBarStyle() -> UIStatusBarStyle {
+    override var  preferredStatusBarStyle : UIStatusBarStyle {
         
-        return UIStatusBarStyle.LightContent
+        return UIStatusBarStyle.lightContent
     }
 
     // MARK: - Table view data source
 
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if isFindingLocation || isLoadingForecast {
             return 0
         }
@@ -64,17 +64,17 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
         }
     }
         
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell: UITableViewCell = tableView.dequeueReusableCellWithIdentifier("DayForecast", forIndexPath: indexPath)
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let cell: UITableViewCell = tableView.dequeueReusableCell(withIdentifier: "DayForecast", for: indexPath)
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
 
         if let _ = forecast?.daily?.data![indexPath.row].time {
             // convert the daily date from seconds to NSDate, then display it in MM/DD format
-            let time : NSTimeInterval = NSTimeInterval(forecast!.daily!.data![indexPath.row].time)
-            let date : NSDate = NSDate(timeIntervalSince1970:time)
+            let time : TimeInterval = TimeInterval(forecast!.daily!.data![indexPath.row].time)
+            let date : Date = Date(timeIntervalSince1970:time)
             
-            cell.textLabel!.text = appDelegate.dateFormatter.stringFromDate(date) + " " + (forecast?.daily?.data![indexPath.row].summary)!
+            cell.textLabel!.text = appDelegate.dateFormatter.string(from: date) + " " + (forecast?.daily?.data![indexPath.row].summary)!
         }
         
         return cell
@@ -82,21 +82,21 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
 
     // MARK: - Navigation
 
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        self.tableView.deselectRowAtIndexPath(indexPath, animated: false)
+        self.tableView.deselectRow(at: indexPath, animated: false)
         
         selectedDayForecast = forecast?.daily?.data![indexPath.row]
         
-        self.performSegueWithIdentifier("DailyDetails", sender: self)
+        self.performSegue(withIdentifier: "DailyDetails", sender: self)
 
     }
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
 
         if segue.identifier == "DailyDetails" {
-            let vc : DetailViewController! = segue.destinationViewController as! DetailViewController
+            let vc : DetailViewController! = segue.destination as! DetailViewController
             vc.dayForecast = selectedDayForecast
         }
     }
@@ -105,44 +105,47 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
     
     // EXTRA CREDIT
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         isFindingLocation = false
         // Retrieve current forecast
         if locations.count > 0 {
             
-            self.getNameOfLocation(locations.first!)
-            
-            let latitude = locations.first!.coordinate.latitude
-            let longitude = locations.first!.coordinate.longitude
-            
-            ForecastIOClient.sharedInstance.forecast(latitude, longitude: longitude, failure: { (error) in
-                let alert: UIAlertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertControllerStyle.Alert)
-                let alertAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil)
-                alert.addAction(alertAction)
-                self.presentViewController(alert, animated: true, completion: nil)
-                }) { (forecast, forecastAPICalls) -> Void in
-                    if let numberOfAPICalls: Int = forecastAPICalls {
-                        print("\(numberOfAPICalls) forecastIO API calls made today!")
-                    }
-                    self.forecast = forecast
-                    print(self.forecast)
-                    self.tableView.reloadData()
-                    
+            if let firstLocation = locations.first {
+                let locationName = self.getNameOfLocation(firstLocation)
+                self.navigationItem.title = "Forecast for " + locationName
+                
+                let latitude = locations.first!.coordinate.latitude
+                let longitude = locations.first!.coordinate.longitude
+                
+                ForecastIOClient.sharedInstance.forecast(latitude, longitude: longitude, failure: { (error) in
+                    let alert: UIAlertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertControllerStyle.alert)
+                    let alertAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                    alert.addAction(alertAction)
+                    self.present(alert, animated: true, completion: nil)
+                    }) { (forecast, forecastAPICalls) -> Void in
+                        if let numberOfAPICalls: Int = forecastAPICalls {
+                            print("\(numberOfAPICalls) forecastIO API calls made today!")
+                        }
+                        self.forecast = forecast
+                        print(self.forecast as Any)
+                        self.tableView.reloadData()
+                        
+                }
             }
         }
         else {
             self.navigationItem.title = "Sorry, can't find you"
             self.tableView.reloadData()
         }
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+        UIApplication.shared.isNetworkActivityIndicatorVisible = false
 
     }
     
-    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         self.navigationItem.title = "Sorry, can't find you"
         isFindingLocation = false
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+        UIApplication.shared.isNetworkActivityIndicatorVisible = false
 
         print(error)
     }
@@ -150,7 +153,7 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
     // EXTRA EXTRA CREDIT
     // Get the city and state name for the found location using reverse geocoding
     
-    func getNameOfLocation( location : CLLocation) -> String {
+    func getNameOfLocation( _ location : CLLocation) -> String {
         
         var locationName : String = ""
         
@@ -162,7 +165,6 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
             if placemark!.count > 0 {
                 let pm = placemark![0] as CLPlacemark
                 locationName = "\(pm.locality!), \(pm.administrativeArea!)"
-                self.navigationItem.title = "Forecast for " + locationName
             } else {
                 print("Error with data")
             }
@@ -179,7 +181,7 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
         self.navigationItem.title = "Finding Location"
 
         locationManager.requestLocation()
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
 
         self.tableView.reloadData()
     }

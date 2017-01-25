@@ -23,7 +23,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Because I want to load the weather for your location</string>
+	<string>WeatherBaerSwift used your location to find your local forecast.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>WeatherBaerSwift sets a reminder to check the latest weather forecast.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

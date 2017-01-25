@@ -10,11 +10,11 @@ import UIKit
 import ForecastIOClient
 
 
-public class DetailViewController: UIViewController {
+open class DetailViewController: UIViewController {
 
-    public var dayForecast: DataPoint?
-    var dateFormatter: NSDateFormatter = NSDateFormatter()
-    var timeFormatter: NSDateFormatter = NSDateFormatter()
+    open var dayForecast: DataPoint?
+    var dateFormatter: DateFormatter = DateFormatter()
+    var timeFormatter: DateFormatter = DateFormatter()
     
     @IBOutlet var highTempLabel: UILabel?
     @IBOutlet var lowTempLabel: UILabel?
@@ -22,23 +22,23 @@ public class DetailViewController: UIViewController {
     @IBOutlet var sunriseLabel: UILabel?
     @IBOutlet var sunsetLabel: UILabel?
 
-    override public func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         
-        dateFormatter.formatterBehavior = NSDateFormatterBehavior.Behavior10_4
+        dateFormatter.formatterBehavior = DateFormatter.Behavior.behavior10_4
         dateFormatter.dateFormat = "EEEE MMM d"
      
-        timeFormatter.formatterBehavior = NSDateFormatterBehavior.Behavior10_4
+        timeFormatter.formatterBehavior = DateFormatter.Behavior.behavior10_4
         timeFormatter.dateFormat = "h:mma"
 
     }
     
-    override public func viewWillAppear(animated: Bool) {
+    override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        var time : NSTimeInterval = NSTimeInterval(dayForecast!.time)
-        var date : NSDate = NSDate(timeIntervalSince1970:time)
-        self.navigationItem.title = dateFormatter.stringFromDate(date) + " Forecast"
+        var time : TimeInterval = TimeInterval(dayForecast!.time)
+        var date : Date = Date(timeIntervalSince1970:time)
+        self.navigationItem.title = dateFormatter.string(from: date) + " Forecast"
         
         if let highTemp: Double = dayForecast?.temperatureMax {
             highTempLabel!.text = String(Int(round(highTemp))) + "°"
@@ -50,19 +50,19 @@ public class DetailViewController: UIViewController {
             forecastTextView!.text = weatherSummary
         }
         if let sunriseTime: Int = dayForecast?.sunriseTime {
-            time = NSTimeInterval(sunriseTime)
-            date = NSDate(timeIntervalSince1970:time)
-            sunriseLabel!.text = timeFormatter.stringFromDate(date)
+            time = TimeInterval(sunriseTime)
+            date = Date(timeIntervalSince1970:time)
+            sunriseLabel!.text = timeFormatter.string(from: date)
         }
         if let sunsetTime: Int = dayForecast?.sunsetTime {
-            time = NSTimeInterval(sunsetTime)
-            date = NSDate(timeIntervalSince1970:time)
-            sunsetLabel!.text = timeFormatter.stringFromDate(date)
+            time = TimeInterval(sunsetTime)
+            date = Date(timeIntervalSince1970:time)
+            sunsetLabel!.text = timeFormatter.string(from: date)
         }
 
     }
 
-    override public func didReceiveMemoryWarning() {
+    override open func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }

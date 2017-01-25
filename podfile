@@ -1,3 +1,6 @@
 use_frameworks!
 
-pod "ForecastIOClient"
+target 'WeatherBaerSwift' do
+    pod "ForecastIOClient"
+end
+
