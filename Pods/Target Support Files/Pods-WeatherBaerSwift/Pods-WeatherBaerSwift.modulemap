@@ -1,0 +1,6 @@
+framework module Pods_WeatherBaerSwift {
+  umbrella header "Pods-WeatherBaerSwift-umbrella.h"
+
+  export *
+  module * { export * }
+}
