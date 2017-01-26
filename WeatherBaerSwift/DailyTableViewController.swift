@@ -111,27 +111,25 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
         // Retrieve current forecast
         if locations.count > 0 {
             
-            if let firstLocation = locations.first {
-                let locationName = self.getNameOfLocation(firstLocation)
-                self.navigationItem.title = "Forecast for " + locationName
-                
-                let latitude = locations.first!.coordinate.latitude
-                let longitude = locations.first!.coordinate.longitude
-                
-                ForecastIOClient.sharedInstance.forecast(latitude, longitude: longitude, failure: { (error) in
-                    let alert: UIAlertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertControllerStyle.alert)
-                    let alertAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
-                    alert.addAction(alertAction)
-                    self.present(alert, animated: true, completion: nil)
-                    }) { (forecast, forecastAPICalls) -> Void in
-                        if let numberOfAPICalls: Int = forecastAPICalls {
-                            print("\(numberOfAPICalls) forecastIO API calls made today!")
-                        }
-                        self.forecast = forecast
-                        print(self.forecast as Any)
-                        self.tableView.reloadData()
-                        
-                }
+            guard let first = locations.first else { return }
+            self.setNameOfLocation(first)
+            
+            let latitude = locations.first!.coordinate.latitude
+            let longitude = locations.first!.coordinate.longitude
+            
+            ForecastIOClient.sharedInstance.forecast(latitude, longitude: longitude, failure: { (error) in
+                let alert: UIAlertController = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertControllerStyle.alert)
+                let alertAction: UIAlertAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+                alert.addAction(alertAction)
+                self.present(alert, animated: true, completion: nil)
+                }) { (forecast, forecastAPICalls) -> Void in
+                    if let numberOfAPICalls: Int = forecastAPICalls {
+                        print("\(numberOfAPICalls) forecastIO API calls made today!")
+                    }
+                    self.forecast = forecast
+                    print(self.forecast as Any)
+                    self.tableView.reloadData()
+                    
             }
         }
         else {
@@ -153,7 +151,7 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
     // EXTRA EXTRA CREDIT
     // Get the city and state name for the found location using reverse geocoding
     
-    func getNameOfLocation( _ location : CLLocation) -> String {
+    func setNameOfLocation( _ location : CLLocation) {
         
         var locationName : String = ""
         
@@ -165,13 +163,14 @@ class DailyTableViewController: UITableViewController, CLLocationManagerDelegate
             if placemark!.count > 0 {
                 let pm = placemark![0] as CLPlacemark
                 locationName = "\(pm.locality!), \(pm.administrativeArea!)"
+                self.navigationItem.title = "Forecast for " + locationName
             } else {
                 print("Error with data")
             }
         })
         
 
-        return locationName
+        return
     }
 
     // MARK - Actions
